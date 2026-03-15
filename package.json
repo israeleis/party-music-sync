@@ -1,0 +1,13 @@
+{
+  "name": "partylight",
+  "private": true,
+  "scripts": {
+    "test": "pnpm --recursive test",
+    "build": "pnpm --recursive build",
+    "lint": "pnpm --recursive lint"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "prettier": "^3.2.0"
+  }
+}
