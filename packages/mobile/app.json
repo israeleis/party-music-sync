@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Partylight",
+    "slug": "partylight",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "backgroundColor": "#000000",
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#000000" } },
+    "plugins": [
+      ["expo-av", { "microphonePermission": "Partylight uses your mic to analyze music." }]
+    ]
+  }
+}
