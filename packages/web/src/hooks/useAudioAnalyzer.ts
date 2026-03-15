@@ -50,14 +50,18 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
     try {
       let stream: MediaStream;
       if (source === 'speaker' && navigator.mediaDevices.getDisplayMedia) {
-        const displayStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: false });
+        // video: true is required by spec; we stop the video track immediately after
+        const displayStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+        displayStream.getVideoTracks().forEach((t) => t.stop());
         stream = displayStream;
       } else {
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       }
       streamRef.current = stream;
 
+      // AudioContext may start suspended (iOS Safari); resume ensures it's running
       const ctx = new AudioContext();
+      if (ctx.state === 'suspended') await ctx.resume();
       contextRef.current = ctx;
 
       const analyser = ctx.createAnalyser();

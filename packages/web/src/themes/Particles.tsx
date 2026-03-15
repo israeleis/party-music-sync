@@ -17,6 +17,7 @@ export function Particles({ colorState, width, height }: ThemeProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
+    particlesRef.current = []; // clear stale particles from previous mount
     let raf: number;
 
     const emit = (count: number, speed: number) => {

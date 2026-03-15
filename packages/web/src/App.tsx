@@ -81,7 +81,7 @@ export default function App() {
 
   const handleAudioSourceChange = useCallback(async (src: AudioSource) => {
     setAudioSource(src);
-    if (audio.isActive) await audio.start(src);
+    if (audio.isActive) await audio.start(src).catch(() => {/* error surfaced via audio.error state */});
   }, [audio]);
 
   if (screen === 'picker') {

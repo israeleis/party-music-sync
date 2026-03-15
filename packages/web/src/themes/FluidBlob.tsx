@@ -51,6 +51,7 @@ export function FluidBlob({ colorState, width, height }: ThemeProps) {
         ctx.shadowBlur = 40;
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.shadowColor = 'transparent';
       }
 
       raf = requestAnimationFrame(draw);

@@ -33,7 +33,10 @@ export function useSync(): UseSyncResult {
   const resetLostSyncTimer = useCallback(() => {
     if (lostSyncTimer.current) clearTimeout(lostSyncTimer.current);
     setLostSync(false);
-    lostSyncTimer.current = setTimeout(() => setLostSync(true), LOST_SYNC_TIMEOUT_MS);
+    lostSyncTimer.current = setTimeout(() => {
+      setLostSync(true);
+      lostSyncTimer.current = null;
+    }, LOST_SYNC_TIMEOUT_MS);
   }, []);
 
   const disconnect = useCallback(() => {
