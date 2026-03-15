@@ -1,4 +1,4 @@
-import type { ColorState, WsMessage } from './types.js';
+import type { ColorState, WsMessage } from './types';
 
 export type SyncRole = 'host' | 'peer';
 

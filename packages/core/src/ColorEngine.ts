@@ -1,5 +1,5 @@
-import type { ColorState } from './types.js';
-import type { BandResult } from './BandProcessor.js';
+import type { ColorState } from './types';
+import type { BandResult } from './BandProcessor';
 
 // Time constant in ms: lower = faster response. 50ms ≈ 0.15 factor at 60fps.
 const LERP_TAU_MS = 50;

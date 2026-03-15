@@ -18,8 +18,13 @@ config.resolver.nodeModulesPaths = [
 // Required for pnpm's symlink-based workspace packages
 config.resolver.unstable_enableSymlinks = true;
 
-// Map the workspace package name directly to its source entry point
-// (avoids relying on the symlink + package.json "exports" resolution chain)
+// Ensure Metro can bundle TypeScript source files from workspace packages
+const { sourceExts, assetExts } = config.resolver;
+config.resolver.assetExts = assetExts.filter((ext) => ext !== 'svg');
+config.resolver.sourceExts = [...sourceExts, 'mjs', 'cjs'];
+
+// Map the workspace package name directly to its TypeScript source entry point.
+// This bypasses the package.json "exports" field which Metro doesn't fully support.
 config.resolver.extraNodeModules = {
   '@partylight/core': path.resolve(workspaceRoot, 'packages/core/src/index.ts'),
 };
