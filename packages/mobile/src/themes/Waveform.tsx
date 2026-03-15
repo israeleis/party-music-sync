@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Canvas, Rect } from '@shopify/react-native-skia';
 import type { ThemeProps } from './types';
 
@@ -8,10 +8,11 @@ export function Waveform({ colorState, width, height }: ThemeProps) {
   const { r, g, b, intensity } = colorState;
   const color = `rgb(${r},${g},${b})`;
   const barWidth = width / BAR_COUNT;
+  const timeRef = useRef(0);
+  timeRef.current += 0.033; // ~30fps increment
 
   const bars = Array.from({ length: BAR_COUNT }, (_, i) => {
-    // Use intensity with sine variation to simulate bar heights
-    const variation = Math.sin(i * 0.5 + Date.now() / 500) * 0.3;
+    const variation = Math.sin(i * 0.5 + timeRef.current) * 0.3;
     const h = Math.max(4, (intensity + variation) * height * 0.8);
     return { x: i * barWidth, h };
   });

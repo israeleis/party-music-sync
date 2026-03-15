@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Dimensions, Modal } from 'react-native';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAudioAnalyzer } from './hooks/useAudioAnalyzer';
 import { useSync } from './hooks/useSync';
 import { useThemePersistence } from './hooks/useThemePersistence';
@@ -24,11 +25,12 @@ const THEMES: ThemeDefinition[] = [
 
 const NULL_COLOR_STATE: ColorState = { r: 0, g: 0, b: 0, beat: false, intensity: 0, timestamp: 0 };
 
-export default function App() {
-  const [screen, setScreen] = useState<'picker' | 'player'>('picker');
+function PlayerScreen() {
+  const insets = useSafeAreaInsets();
   const [showSyncPanel, setShowSyncPanel] = useState(false);
   const [themeId, setThemeId] = useThemePersistence('solid-wash');
   const [dimensions, setDimensions] = useState(Dimensions.get('window'));
+  const [screen, setScreen] = useState<'picker' | 'player'>('picker');
 
   const audio = useAudioAnalyzer();
   const sync = useSync();
@@ -64,6 +66,8 @@ export default function App() {
     );
   }
 
+  const btnTop = insets.top + 8;
+
   return (
     <View style={styles.container}>
       <activeTheme.Component
@@ -74,11 +78,11 @@ export default function App() {
 
       <LostSyncToast visible={sync.mode === 'peer' && sync.lostSync} />
 
-      <TouchableOpacity style={styles.syncBtn} onPress={() => setShowSyncPanel(true)}>
+      <TouchableOpacity style={[styles.syncBtn, { top: btnTop }]} onPress={() => setShowSyncPanel(true)}>
         <Text style={styles.btnText}>{sync.mode === 'off' ? '⚡' : '🔗'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.themeBtn} onPress={() => setScreen('picker')}>
+      <TouchableOpacity style={[styles.themeBtn, { top: btnTop }]} onPress={() => setScreen('picker')}>
         <Text style={styles.btnText}>🎨</Text>
       </TouchableOpacity>
 
@@ -91,10 +95,18 @@ export default function App() {
   );
 }
 
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <PlayerScreen />
+    </SafeAreaProvider>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  syncBtn: { position: 'absolute', top: 60, right: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
-  themeBtn: { position: 'absolute', top: 60, left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  syncBtn: { position: 'absolute', right: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+  themeBtn: { position: 'absolute', left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   btnText: { fontSize: 20 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', padding: 16 },
 });

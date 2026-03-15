@@ -18,9 +18,7 @@ function dbToLinear(db: number): number {
 }
 
 // Derive approximate band values from a single level value
-// Bass is dominant for loud low-pitched sounds; use some variation
 function deriveApproximateBands(level: number, phase: number) {
-  // Add slight variation per band using a slowly changing phase
   const bass = Math.min(1, level * (1 + 0.3 * Math.sin(phase)));
   const mid = Math.min(1, level * (1 + 0.2 * Math.sin(phase * 1.7 + 1)));
   const treble = Math.min(1, level * (1 + 0.15 * Math.sin(phase * 2.3 + 2)));
@@ -28,6 +26,8 @@ function deriveApproximateBands(level: number, phase: number) {
 }
 
 const POLL_INTERVAL_MS = 33; // ~30fps
+// Placeholder frequency data (expo-av has no FFT); hoisted to avoid 30fps allocations
+const EMPTY_FREQUENCY_DATA = new Uint8Array(1024);
 
 export function useAudioAnalyzer(): UseAudioAnalyzerResult {
   const [colorState, setColorState] = useState<ColorState | null>(null);
@@ -57,7 +57,11 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
     stop();
     setError(null);
     try {
-      await Audio.requestPermissionsAsync();
+      const { granted } = await Audio.requestPermissionsAsync();
+      if (!granted) {
+        setError('Microphone permission denied. Please enable it in Settings.');
+        return;
+      }
       await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
 
       const { recording } = await Audio.Recording.createAsync(
@@ -68,18 +72,19 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
       recordingRef.current = recording;
 
       intervalRef.current = setInterval(() => {
-        const status = recording.getStatusAsync();
-        status.then((s) => {
+        // Use ref instead of closure to avoid calling getStatusAsync on an unloaded recording
+        const rec = recordingRef.current;
+        if (!rec) return;
+        rec.getStatusAsync().then((s) => {
           if (!s.isRecording) return;
           const db = s.metering ?? -60;
           const level = dbToLinear(db);
           phaseRef.current += 0.1;
 
-          // Simple beat detection: level spike
           const prevLevel = lastLevelRef.current;
           const now = Date.now();
           const beat = level > prevLevel * 1.5 && level > 0.2 && now > beatCooldownRef.current;
-          if (beat) beatCooldownRef.current = now + 200; // 200ms cooldown
+          if (beat) beatCooldownRef.current = now + 200;
           lastLevelRef.current = level;
 
           const { bass, mid, treble } = deriveApproximateBands(level, phaseRef.current);
@@ -87,7 +92,7 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
             bass, mid, treble,
             rms: level,
             beat,
-            frequencyData: new Uint8Array(1024),
+            frequencyData: EMPTY_FREQUENCY_DATA,
           };
           const state = colorEngine.current.update(bands, now);
           setColorState(state);

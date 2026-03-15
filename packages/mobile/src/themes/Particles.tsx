@@ -1,18 +1,25 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Canvas, Circle, Rect } from '@shopify/react-native-skia';
 import type { ThemeProps } from './types';
 
 type Particle = {
+  id: number;
   x: number; y: number;
   vx: number; vy: number;
   life: number;
 };
 
 const MAX_PARTICLES = 150;
+let nextId = 0;
 
 export function Particles({ colorState, width, height }: ThemeProps) {
   const { r, g, b, beat, intensity } = colorState;
   const particlesRef = useRef<Particle[]>([]);
+
+  // Clear stale particles from previous mount
+  useEffect(() => {
+    particlesRef.current = [];
+  }, []);
 
   // Emit new particles
   const count = Math.floor(intensity * 3) + (beat ? 20 : 0);
@@ -20,6 +27,7 @@ export function Particles({ colorState, width, height }: ThemeProps) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 2 + intensity * 5 + (beat ? 6 : 0);
     particlesRef.current.push({
+      id: nextId++,
       x: width / 2, y: height / 2,
       vx: Math.cos(angle) * speed * Math.random(),
       vy: Math.sin(angle) * speed * Math.random(),
@@ -35,9 +43,9 @@ export function Particles({ colorState, width, height }: ThemeProps) {
   return (
     <Canvas style={{ width, height }}>
       <Rect x={0} y={0} width={width} height={height} color="rgba(0,0,0,0.2)" />
-      {particlesRef.current.map((p, i) => (
+      {particlesRef.current.map((p) => (
         <Circle
-          key={i}
+          key={p.id}
           cx={p.x}
           cy={p.y}
           r={2}
