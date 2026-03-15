@@ -1,0 +1,22 @@
+{
+  "name": "@partylight/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "start": "node --loader ts-node/esm src/index.ts",
+    "dev": "tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0",
+    "@types/ws": "^8.5.10",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0"
+  }
+}
