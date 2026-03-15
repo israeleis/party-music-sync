@@ -15,6 +15,11 @@ const ROLLING_MAX_FLOOR = 0.01;
 const SILENCE_RMS_THRESHOLD = 0.001;
 const SILENCE_DURATION_MS = 1000;
 const BEAT_AUTO_TUNE_INTERVAL_MS = 5000;
+const BEAT_TARGET_MAX_BPS = 4;
+const BEAT_TARGET_MIN_BPS = 0.5;
+const BEAT_THRESHOLD_MAX = 2.0;
+const BEAT_THRESHOLD_MIN = 1.2;
+const BEAT_THRESHOLD_STEP = 0.05;
 
 function bandAverage(data: Uint8Array, start: number, end: number): number {
   let sum = 0;
@@ -25,7 +30,11 @@ function bandAverage(data: Uint8Array, start: number, end: number): number {
 function rollingMax(window: number[], value: number, maxSize: number): number {
   window.push(value);
   if (window.length > maxSize) window.shift();
-  return Math.max(ROLLING_MAX_FLOOR, ...window);
+  let max = ROLLING_MAX_FLOOR;
+  for (let i = 0; i < window.length; i++) {
+    if (window[i] > max) max = window[i];
+  }
+  return max;
 }
 
 export type BandResult = {
@@ -71,6 +80,8 @@ export class BandProcessor {
       this.silenceStartTime !== null && now - this.silenceStartTime > SILENCE_DURATION_MS;
 
     if (isSilent) {
+      // Clear beat history during silence to prevent false beats on resumption
+      this.beatHistory = [];
       return { bass: 0, mid: 0, treble: 0, rms: 0, beat: false, frequencyData };
     }
 
@@ -98,8 +109,11 @@ export class BandProcessor {
     if (this.lastAutoTuneTime === 0) this.lastAutoTuneTime = now;
     if (now - this.lastAutoTuneTime >= BEAT_AUTO_TUNE_INTERVAL_MS) {
       const beatsPerSec = this.beatCountInWindow / 5;
-      if (beatsPerSec > 4) this.beatThreshold = Math.min(2.0, this.beatThreshold + 0.05);
-      else if (beatsPerSec < 0.5) this.beatThreshold = Math.max(1.2, this.beatThreshold - 0.05);
+      if (beatsPerSec > BEAT_TARGET_MAX_BPS) {
+        this.beatThreshold = Math.min(BEAT_THRESHOLD_MAX, this.beatThreshold + BEAT_THRESHOLD_STEP);
+      } else if (beatsPerSec < BEAT_TARGET_MIN_BPS) {
+        this.beatThreshold = Math.max(BEAT_THRESHOLD_MIN, this.beatThreshold - BEAT_THRESHOLD_STEP);
+      }
       this.beatCountInWindow = 0;
       this.lastAutoTuneTime = now;
     }

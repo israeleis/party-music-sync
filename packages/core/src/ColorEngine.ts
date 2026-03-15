@@ -1,7 +1,8 @@
 import type { ColorState } from './types.js';
 import type { BandResult } from './BandProcessor.js';
 
-const LERP_FACTOR = 0.15;
+// Time constant in ms: lower = faster response. 50ms ≈ 0.15 factor at 60fps.
+const LERP_TAU_MS = 50;
 const BEAT_FLASH_FRAMES = 2;
 
 export class ColorEngine {
@@ -10,15 +11,22 @@ export class ColorEngine {
   private b = 0;
   private intensity = 0;
   private beatFlashRemaining = 0;
+  private lastTimestamp = 0;
 
   update(bands: BandResult, timestamp: number): ColorState {
+    const dt = this.lastTimestamp === 0 ? 16 : Math.min(100, timestamp - this.lastTimestamp);
+    this.lastTimestamp = timestamp;
+
+    // Time-delta lerp: frame-rate independent
+    const alpha = 1 - Math.exp(-dt / LERP_TAU_MS);
+
     const targetR = bands.bass * 255;
     const targetG = bands.mid * 255;
     const targetB = bands.treble * 255;
 
-    this.r += (targetR - this.r) * LERP_FACTOR;
-    this.g += (targetG - this.g) * LERP_FACTOR;
-    this.b += (targetB - this.b) * LERP_FACTOR;
+    this.r += (targetR - this.r) * alpha;
+    this.g += (targetG - this.g) * alpha;
+    this.b += (targetB - this.b) * alpha;
     this.intensity = bands.rms;
 
     if (bands.beat) this.beatFlashRemaining = BEAT_FLASH_FRAMES;
@@ -47,6 +55,6 @@ export class ColorEngine {
 
   reset(): void {
     this.r = 0; this.g = 0; this.b = 0;
-    this.intensity = 0; this.beatFlashRemaining = 0;
+    this.intensity = 0; this.beatFlashRemaining = 0; this.lastTimestamp = 0;
   }
 }
