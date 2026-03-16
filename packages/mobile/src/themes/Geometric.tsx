@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Canvas, Path, Rect, Skia } from '@shopify/react-native-skia';
+import { Path, Rect, Skia } from '@shopify/react-native-skia';
+import { AnimatedCanvas } from '../components/AnimatedCanvas';
 import type { ThemeProps } from './types';
 
 function makePolygonPath(cx: number, cy: number, r: number, sides: number, angle: number): ReturnType<typeof Skia.Path.Make> {
@@ -32,7 +33,7 @@ export function Geometric({ colorState, width, height }: ThemeProps) {
   ];
 
   return (
-    <Canvas style={{ width, height }}>
+    <AnimatedCanvas style={{ width, height }}>
       <Rect x={0} y={0} width={width} height={height} color="black" />
       {shapes.map(({ sides, rMult, alpha }, i) => {
         const angle = angleRef.current * (i % 2 === 0 ? 1 : -1);
@@ -47,6 +48,6 @@ export function Geometric({ colorState, width, height }: ThemeProps) {
           />
         );
       })}
-    </Canvas>
+    </AnimatedCanvas>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Canvas, Rect } from '@shopify/react-native-skia';
+import { Rect } from '@shopify/react-native-skia';
+import { AnimatedCanvas } from '../components/AnimatedCanvas';
 import type { ThemeProps } from './types';
 
 const BAR_COUNT = 32;
@@ -18,7 +19,7 @@ export function Waveform({ colorState, width, height }: ThemeProps) {
   });
 
   return (
-    <Canvas style={{ width, height }}>
+    <AnimatedCanvas style={{ width, height }}>
       <Rect x={0} y={0} width={width} height={height} color="black" />
       {bars.map((bar, i) => (
         <Rect
@@ -30,6 +31,6 @@ export function Waveform({ colorState, width, height }: ThemeProps) {
           color={color}
         />
       ))}
-    </Canvas>
+    </AnimatedCanvas>
   );
 }

@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import type { UseSyncResult } from '../hooks/useSync';
+import type { AudioSource } from '../hooks/useAudioAnalyzer';
 
 type SyncPanelProps = {
   sync: UseSyncResult;
+  audioSource: AudioSource;
+  onAudioSourceChange: (src: AudioSource) => void;
   discoveredRooms?: Array<{ code: string; peerCount: number }>;
   onClose: () => void;
 };
 
-export function SyncPanel({ sync, discoveredRooms = [], onClose }: SyncPanelProps) {
+export function SyncPanel({ sync, audioSource, onAudioSourceChange, discoveredRooms = [], onClose }: SyncPanelProps) {
   const [joinCode, setJoinCode] = useState('');
 
   return (
@@ -16,6 +19,26 @@ export function SyncPanel({ sync, discoveredRooms = [], onClose }: SyncPanelProp
       <View style={styles.header}>
         <Text style={styles.title}>Sync Settings</Text>
         <TouchableOpacity onPress={onClose}><Text style={styles.close}>✕</Text></TouchableOpacity>
+      </View>
+
+      <View style={styles.sourceRow}>
+        <Text style={styles.sourceLabel}>Audio input</Text>
+        <View style={styles.sourceToggle}>
+          {(['mic', 'speaker'] as AudioSource[]).map((src) => (
+            <TouchableOpacity
+              key={src}
+              style={[styles.sourceBtn, audioSource === src && styles.sourceBtnActive]}
+              onPress={() => onAudioSourceChange(src)}
+            >
+              <Text style={[styles.sourceBtnText, audioSource === src && styles.sourceBtnTextActive]}>
+                {src === 'mic' ? '🎤 Mic' : '🔊 Speaker'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {audioSource === 'speaker' && (
+          <Text style={styles.sourceNote}>Uses mic to pick up room audio (direct capture not supported on mobile)</Text>
+        )}
       </View>
 
       {sync.mode === 'off' ? (
@@ -84,4 +107,12 @@ const styles = StyleSheet.create({
   connStatus: { color: '#888', fontSize: 13, marginTop: 8 },
   leaveBtn: { backgroundColor: '#333', padding: 14, borderRadius: 10, marginTop: 24, width: '100%' },
   leaveBtnText: { color: '#fff', textAlign: 'center', fontSize: 16 },
+  sourceRow: { marginBottom: 20 },
+  sourceLabel: { color: '#888', fontSize: 12, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 1 },
+  sourceToggle: { flexDirection: 'row', gap: 8 },
+  sourceBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#222', alignItems: 'center' },
+  sourceBtnActive: { backgroundColor: '#6c47ff' },
+  sourceBtnText: { color: '#888', fontSize: 14, fontWeight: '500' },
+  sourceBtnTextActive: { color: '#fff' },
+  sourceNote: { color: '#555', fontSize: 11, marginTop: 6, fontStyle: 'italic' },
 });

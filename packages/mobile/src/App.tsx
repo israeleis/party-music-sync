@@ -35,6 +35,17 @@ function PlayerScreen() {
   const audio = useAudioAnalyzer();
   const sync = useSync();
 
+  // Drive 30fps re-renders so theme animations advance even when audio colorState
+  // doesn't change (e.g. quiet room). Also ensures Skia canvas receives new children.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (screen !== 'player') return;
+    let id: number;
+    const loop = () => { setTick((t) => t + 1); id = requestAnimationFrame(loop); };
+    id = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(id);
+  }, [screen]);
+
   const activeColorState: ColorState =
     sync.mode === 'peer' && sync.peerColorState != null
       ? sync.peerColorState
@@ -57,8 +68,12 @@ function PlayerScreen() {
   const handleThemeSelect = useCallback(async (id: string) => {
     setThemeId(id);
     setScreen('player');
-    if (!audio.isActive) await audio.start();
+    if (!audio.isActive) await audio.start(audio.audioSource);
   }, [setThemeId, audio]);
+
+  const handleAudioSourceChange = useCallback(async (src: import('./hooks/useAudioAnalyzer').AudioSource) => {
+    await audio.start(src);
+  }, [audio]);
 
   if (screen === 'picker') {
     return (
@@ -78,6 +93,21 @@ function PlayerScreen() {
 
       <LostSyncToast visible={sync.mode === 'peer' && sync.lostSync} />
 
+      {audio.error && (
+        <View style={[styles.errorBanner, { top: btnTop + 52 }]}>
+          <Text style={styles.errorText}>🎤 {audio.error}</Text>
+        </View>
+      )}
+
+      {!audio.isActive && !audio.error && sync.mode !== 'peer' && (
+        <TouchableOpacity
+          style={[styles.micBtn, { bottom: insets.bottom + 16 }]}
+          onPress={() => audio.start()}
+        >
+          <Text style={styles.btnText}>🎤 Start mic</Text>
+        </TouchableOpacity>
+      )}
+
       <TouchableOpacity style={[styles.syncBtn, { top: btnTop }]} onPress={() => setShowSyncPanel(true)}>
         <Text style={styles.btnText}>{sync.mode === 'off' ? '⚡' : '🔗'}</Text>
       </TouchableOpacity>
@@ -88,7 +118,12 @@ function PlayerScreen() {
 
       <Modal visible={showSyncPanel} transparent animationType="slide" onRequestClose={() => setShowSyncPanel(false)}>
         <View style={styles.modalOverlay}>
-          <SyncPanel sync={sync} onClose={() => setShowSyncPanel(false)} />
+          <SyncPanel
+            sync={sync}
+            audioSource={audio.audioSource}
+            onAudioSourceChange={handleAudioSourceChange}
+            onClose={() => setShowSyncPanel(false)}
+          />
         </View>
       </Modal>
     </View>
@@ -109,4 +144,7 @@ const styles = StyleSheet.create({
   themeBtn: { position: 'absolute', left: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   btnText: { fontSize: 20 },
   modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)', padding: 16 },
+  errorBanner: { position: 'absolute', left: 16, right: 16, backgroundColor: 'rgba(200,0,0,0.85)', borderRadius: 8, padding: 10 },
+  errorText: { color: '#fff', fontSize: 13, textAlign: 'center' },
+  micBtn: { position: 'absolute', alignSelf: 'center', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
 });

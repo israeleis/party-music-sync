@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Canvas, Path, Rect, Skia } from '@shopify/react-native-skia';
+import { Path, Rect, Skia } from '@shopify/react-native-skia';
+import { AnimatedCanvas } from '../components/AnimatedCanvas';
 import type { ThemeProps } from './types';
 
 export function FluidBlob({ colorState, width, height }: ThemeProps) {
@@ -29,9 +30,9 @@ export function FluidBlob({ colorState, width, height }: ThemeProps) {
   path.close();
 
   return (
-    <Canvas style={{ width, height }}>
+    <AnimatedCanvas style={{ width, height }}>
       <Rect x={0} y={0} width={width} height={height} color="black" />
       <Path path={path} color={`rgba(${r},${g},${b},0.85)`} style="fill" />
-    </Canvas>
+    </AnimatedCanvas>
   );
 }

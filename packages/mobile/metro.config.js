@@ -29,4 +29,5 @@ config.resolver.extraNodeModules = {
   '@partylight/core': path.resolve(workspaceRoot, 'packages/core/src/index.ts'),
 };
 
+
 module.exports = config;

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
-import { Canvas, Circle, Rect } from '@shopify/react-native-skia';
+import { Circle, Rect } from '@shopify/react-native-skia';
+import { AnimatedCanvas } from '../components/AnimatedCanvas';
 import type { ThemeProps } from './types';
 
 type Particle = {
@@ -41,7 +42,7 @@ export function Particles({ colorState, width, height }: ThemeProps) {
     .filter((p) => p.life > 0);
 
   return (
-    <Canvas style={{ width, height }}>
+    <AnimatedCanvas style={{ width, height }}>
       <Rect x={0} y={0} width={width} height={height} color="rgba(0,0,0,0.2)" />
       {particlesRef.current.map((p) => (
         <Circle
@@ -52,6 +53,6 @@ export function Particles({ colorState, width, height }: ThemeProps) {
           color={`rgba(${r},${g},${b},${p.life})`}
         />
       ))}
-    </Canvas>
+    </AnimatedCanvas>
   );
 }
