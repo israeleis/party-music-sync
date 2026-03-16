@@ -5,10 +5,28 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "backgroundColor": "#000000",
-    "ios": { "supportsTablet": true },
-    "android": { "adaptiveIcon": { "backgroundColor": "#000000" } },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#000000"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.anonymous.partylight"
+    },
     "plugins": [
-      ["expo-av", { "microphonePermission": "Partylight uses your mic to analyze music." }]
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Partylight uses your mic to analyze music."
+        }
+      ]
     ]
   }
 }

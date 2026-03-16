@@ -47,7 +47,6 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
   const lastLevelRef = useRef(0);
   const beatCooldownRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollCountRef = useRef(0);
 
   const recorder = useAudioRecorder(RECORDING_OPTIONS);
 
@@ -58,12 +57,6 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
 
     intervalRef.current = setInterval(() => {
       const status = recorder.getStatus();
-
-      pollCountRef.current += 1;
-      // Log every ~30 polls (~1s)
-      if (pollCountRef.current % 30 === 0) {
-        console.log(`[audio] poll #${pollCountRef.current} metering=${status.metering} isRecording=${status.isRecording}`);
-      }
 
       if (!status.isRecording) return;
 
@@ -119,7 +112,6 @@ export function useAudioAnalyzer(): UseAudioAnalyzerResult {
     }
     setError(null);
     setAudioSource(source);
-    pollCountRef.current = 0;
     // Note: 'speaker' (system audio capture) is not supported on mobile.
     // Both modes use the microphone — speaker audio in the room will be picked up.
     try {
