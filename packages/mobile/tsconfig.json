@@ -1,9 +1,0 @@
-{
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@partylight/core": ["../core/src/index.ts"]
-    }
-  }
-}
